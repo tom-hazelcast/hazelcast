@@ -2,6 +2,8 @@ package com.hazelcast.raft.impl.service;
 
 import com.hazelcast.client.impl.protocol.ClientExceptionFactory;
 import com.hazelcast.config.raft.RaftConfig;
+import com.hazelcast.config.raft.RaftGroupConfig;
+import com.hazelcast.config.raft.RaftMetadataGroupConfig;
 import com.hazelcast.core.ExecutionCallback;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.internal.cluster.ClusterService;
@@ -82,6 +84,21 @@ public class RaftService implements ManagedService, SnapshotAwareService<Metadat
         this.logger = nodeEngine.getLogger(getClass());
         RaftConfig raftConfig = nodeEngine.getConfig().getRaftConfig();
         this.config = raftConfig != null ? new RaftConfig(raftConfig) : new RaftConfig();
+
+        // -------------------- WORKAROUND FOR SIMULATOR CONFIG --------------------
+        int metaGroupSize = Integer.getInteger("hazelcast.raft.metagroupsize", 3);
+        RaftMetadataGroupConfig metadataGroupConfig = new RaftMetadataGroupConfig()
+                .setGroupSize(metaGroupSize)
+                .setMetadataGroupSize(metaGroupSize)
+                .setInitialRaftMember(true);
+        config.setMetadataGroupConfig(metadataGroupConfig);
+
+        int groupSize = Integer.getInteger("hazelcast.raft.groupsize", 3);
+        for (int i = 0; i < 100; i++) {
+            config.addGroupConfig(new RaftGroupConfig("raft:" + i, groupSize));
+        }
+        // -------------------------------------------------------------------------
+
         this.metadataManager = new RaftMetadataManager(nodeEngine, this, config.getMetadataGroupConfig());
         this.invocationManager = new RaftInvocationManager(nodeEngine, this);
     }

@@ -1511,7 +1511,10 @@ public class DynamicConfigurationAwareConfig extends Config {
 
     @Override
     public Config addRaftAtomicLongConfig(RaftAtomicLongConfig config) {
-        throw new UnsupportedOperationException("Unsupported operation");
+        // throw new UnsupportedOperationException("Unsupported operation");
+        // -------------------- WORKAROUND FOR SIMULATOR CONFIG --------------------
+        staticConfig.addRaftAtomicLongConfig(config);
+        return this;
     }
 
     @Override

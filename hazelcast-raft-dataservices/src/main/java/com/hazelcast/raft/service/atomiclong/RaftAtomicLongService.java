@@ -22,11 +22,11 @@ import com.hazelcast.core.IAtomicLong;
 import com.hazelcast.core.ICompletableFuture;
 import com.hazelcast.raft.RaftGroupId;
 import com.hazelcast.raft.SnapshotAwareService;
+import com.hazelcast.raft.impl.RaftGroupLifecycleAwareService;
 import com.hazelcast.raft.impl.service.RaftInvocationManager;
 import com.hazelcast.raft.impl.service.RaftService;
 import com.hazelcast.raft.impl.util.Tuple2;
 import com.hazelcast.raft.service.atomiclong.proxy.RaftAtomicLongProxy;
-import com.hazelcast.raft.impl.RaftGroupLifecycleAwareService;
 import com.hazelcast.raft.service.spi.RaftRemoteService;
 import com.hazelcast.spi.ManagedService;
 import com.hazelcast.spi.NodeEngine;
@@ -63,6 +63,13 @@ public class RaftAtomicLongService implements ManagedService, RaftRemoteService,
     @Override
     public void init(NodeEngine nodeEngine, Properties properties) {
         this.raftService = nodeEngine.getService(RaftService.SERVICE_NAME);
+
+        // -------------------- WORKAROUND FOR SIMULATOR CONFIG --------------------
+        for (int i = 0; i < 100; i++) {
+            RaftAtomicLongConfig config = new RaftAtomicLongConfig("RaftAtomicLong:" + i, "raft:" + i);
+            nodeEngine.getConfig().addRaftAtomicLongConfig(config);
+        }
+        // -------------------------------------------------------------------------
     }
 
     @Override
