@@ -5,6 +5,7 @@ import com.hazelcast.instance.MemberImpl;
 import com.hazelcast.internal.cluster.Versions;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.LoggingServiceImpl;
+import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.raft.RaftGroupId;
 import com.hazelcast.raft.SnapshotAwareService;
 import com.hazelcast.raft.RaftMember;
@@ -24,6 +25,7 @@ import com.hazelcast.raft.impl.service.RestoreSnapshotRaftRunnable;
 import com.hazelcast.raft.impl.util.SimpleCompletableFuture;
 import com.hazelcast.version.MemberVersion;
 
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -349,5 +351,10 @@ public class LocalRaftIntegration implements RaftIntegration {
 
     @Override
     public void onNodeStatusChange(RaftNodeStatus status) {
+    }
+
+    @Override
+    public void write(OutputStream fout, DataSerializable...newEntries) {
+        throw new UnsupportedOperationException();
     }
 }

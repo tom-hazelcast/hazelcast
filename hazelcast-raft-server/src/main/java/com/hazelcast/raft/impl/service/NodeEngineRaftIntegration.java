@@ -1,12 +1,14 @@
 package com.hazelcast.raft.impl.service;
 
+import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.logging.ILogger;
+import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.raft.RaftGroupId;
+import com.hazelcast.raft.RaftMember;
 import com.hazelcast.raft.SnapshotAwareService;
 import com.hazelcast.raft.impl.RaftGroupLifecycleAwareService;
-import com.hazelcast.raft.RaftMember;
-import com.hazelcast.raft.impl.RaftMemberImpl;
 import com.hazelcast.raft.impl.RaftIntegration;
+import com.hazelcast.raft.impl.RaftMemberImpl;
 import com.hazelcast.raft.impl.RaftNodeStatus;
 import com.hazelcast.raft.impl.RaftOp;
 import com.hazelcast.raft.impl.dto.AppendFailureResponse;
@@ -38,6 +40,8 @@ import com.hazelcast.spi.impl.operationservice.InternalOperationService;
 import com.hazelcast.spi.impl.operationservice.impl.OperationServiceImpl;
 import com.hazelcast.spi.impl.servicemanager.ServiceInfo;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -58,6 +62,7 @@ final class NodeEngineRaftIntegration implements RaftIntegration {
     private final TaskScheduler taskScheduler;
     private final int partitionId;
     private final int threadId;
+    private final InternalSerializationService serializationService;
 
     NodeEngineRaftIntegration(NodeEngineImpl nodeEngine, RaftGroupId groupId) {
         this.nodeEngine = nodeEngine;
@@ -68,6 +73,9 @@ final class NodeEngineRaftIntegration implements RaftIntegration {
         OperationExecutorImpl operationExecutor = (OperationExecutorImpl) operationService.getOperationExecutor();
         this.threadId = operationExecutor.toPartitionThreadIndex(partitionId);
         this.taskScheduler = nodeEngine.getExecutionService().getGlobalTaskScheduler();
+
+        serializationService =
+                (InternalSerializationService) nodeEngine.getSerializationService();
     }
 
     @Override
@@ -209,6 +217,14 @@ final class NodeEngineRaftIntegration implements RaftIntegration {
             for (RaftGroupLifecycleAwareService service : services) {
                 service.onGroupDestroy(groupId);
             }
+        }
+    }
+
+    @Override
+    public void write(OutputStream fout, DataSerializable... entries) throws IOException {
+        for (DataSerializable entry : entries) {
+            byte[] bytes = serializationService.toBytes(entry);
+            fout.write(bytes);
         }
     }
 }

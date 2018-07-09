@@ -87,7 +87,7 @@ public class RaftNodeImpl implements RaftNode {
         this.groupId = groupId;
         this.raftIntegration = raftIntegration;
         this.localMember = localMember;
-        this.state = new RaftState(groupId, localMember, members);
+        this.state = new RaftState(groupId, localMember, members, raftIntegration);
         this.logger = getLogger(RaftNode.class);
         this.maxUncommittedEntryCount = raftAlgorithmConfig.getUncommittedEntryCountToRejectNewAppends();
         this.appendRequestMaxEntryCount = raftAlgorithmConfig.getAppendRequestMaxEntryCount();

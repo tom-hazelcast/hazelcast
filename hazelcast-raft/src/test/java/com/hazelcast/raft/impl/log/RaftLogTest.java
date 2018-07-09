@@ -31,7 +31,7 @@ public class RaftLogTest {
 
     @Before
     public void setUp() throws Exception {
-        log = new RaftLog();
+        log = new RaftLog(null);
     }
 
     @Test

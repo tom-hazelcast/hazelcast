@@ -2,6 +2,7 @@ package com.hazelcast.raft.impl.state;
 
 import com.hazelcast.raft.RaftGroupId;
 import com.hazelcast.raft.RaftMember;
+import com.hazelcast.raft.impl.RaftIntegration;
 import com.hazelcast.raft.impl.RaftRole;
 import com.hazelcast.raft.impl.dto.VoteRequest;
 import com.hazelcast.raft.impl.log.RaftLog;
@@ -82,7 +83,7 @@ public class RaftState {
      * Raft log entries; each entry contains command for state machine,
      * and term when entry was received by leader (first index is 1)
      */
-    private RaftLog log = new RaftLog();
+    private final RaftLog log;
 
     /**
      * State maintained by the leader, null if this node is not the leader
@@ -102,9 +103,11 @@ public class RaftState {
      */
     private CandidateState candidateState;
 
-    public RaftState(RaftGroupId groupId, RaftMember localEndpoint, Collection<RaftMember> endpoints) {
+    public RaftState(RaftGroupId groupId, RaftMember localEndpoint, Collection<RaftMember> endpoints,
+            RaftIntegration raftIntegration) {
         this.groupId = groupId;
         this.localEndpoint = localEndpoint;
+        this.log = new RaftLog(raftIntegration);
         this.initialMembers = unmodifiableSet(new LinkedHashSet<RaftMember>(endpoints));
         RaftGroupMembers groupMembers = new RaftGroupMembers(0, endpoints, localEndpoint);
         this.committedGroupMembers = groupMembers;

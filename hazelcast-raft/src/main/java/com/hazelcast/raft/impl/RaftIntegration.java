@@ -1,6 +1,7 @@
 package com.hazelcast.raft.impl;
 
 import com.hazelcast.logging.ILogger;
+import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.raft.RaftMember;
 import com.hazelcast.raft.impl.dto.AppendFailureResponse;
 import com.hazelcast.raft.impl.dto.AppendRequest;
@@ -13,6 +14,8 @@ import com.hazelcast.raft.impl.dto.VoteResponse;
 import com.hazelcast.raft.impl.log.SnapshotEntry;
 import com.hazelcast.raft.impl.util.SimpleCompletableFuture;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -169,4 +172,6 @@ public interface RaftIntegration {
      * @param status new status
      */
     void onNodeStatusChange(RaftNodeStatus status);
+
+    void write(OutputStream fout, DataSerializable... entries) throws IOException;
 }

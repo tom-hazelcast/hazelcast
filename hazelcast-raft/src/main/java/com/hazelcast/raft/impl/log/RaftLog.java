@@ -1,5 +1,12 @@
 package com.hazelcast.raft.impl.log;
 
+import com.hazelcast.logging.Logger;
+import com.hazelcast.raft.impl.RaftIntegration;
+import com.hazelcast.util.ExceptionUtil;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +27,27 @@ import static java.util.Collections.reverse;
  * @see SnapshotEntry
  */
 public class RaftLog {
+
+    private static final boolean persist = Boolean.getBoolean("hazelcast.raft.persistence.enabled");
+
+    private final FileOutputStream fout;
+    private final RaftIntegration raftIntegration;
+
+    public RaftLog(RaftIntegration raftIntegration) {
+        this.raftIntegration = raftIntegration;
+        if (persist) {
+            try {
+                File file = new File("raft.log");
+                file.deleteOnExit();
+                Logger.getLogger(getClass()).warning("Persisting Raft log to " + file.getAbsolutePath());
+                fout = new FileOutputStream(file);
+            } catch (IOException e) {
+                throw ExceptionUtil.rethrow(e);
+            }
+        } else {
+            fout = null;
+        }
+    }
 
     /**
      * Array of log entries stored in the Raft log.
@@ -121,6 +149,16 @@ public class RaftLog {
             lastIndex++;
             lastTerm = Math.max(lastTerm, entry.term());
         }
+
+        if (persist) {
+            try {
+                raftIntegration.write(fout, newEntries);
+                fout.getFD().sync();
+            } catch (IOException e) {
+                throw ExceptionUtil.rethrow(e);
+            }
+        }
+
     }
 
     /**
