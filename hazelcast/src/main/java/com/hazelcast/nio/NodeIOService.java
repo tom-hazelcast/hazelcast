@@ -33,6 +33,7 @@ import com.hazelcast.logging.LoggingService;
 import com.hazelcast.nio.tcp.TcpIpConnection;
 import com.hazelcast.spi.EventService;
 import com.hazelcast.spi.ExecutionService;
+import com.hazelcast.spi.NodeEngine;
 import com.hazelcast.spi.annotation.PrivateApi;
 import com.hazelcast.spi.impl.NodeEngineImpl;
 import com.hazelcast.spi.properties.GroupProperty;
@@ -105,6 +106,11 @@ public class NodeIOService implements IOService {
     @Override
     public SSLConfig getSSLConfig() {
         return node.getConfig().getNetworkConfig().getSSLConfig();
+    }
+
+    @Override
+    public NodeEngine getNodeEngine() {
+        return nodeEngine;
     }
 
     @Override
