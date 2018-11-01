@@ -17,10 +17,11 @@
 package com.hazelcast.nio.tcp;
 
 import com.hazelcast.client.impl.protocol.util.ClientMessageEncoder;
-import com.hazelcast.internal.networking.OutboundHandler;
 import com.hazelcast.internal.networking.HandlerStatus;
+import com.hazelcast.internal.networking.OutboundHandler;
 import com.hazelcast.nio.IOService;
 import com.hazelcast.nio.ascii.TextEncoder;
+import com.hazelcast.nio.redis.RedisEncoder;
 import com.hazelcast.spi.properties.HazelcastProperties;
 
 import java.nio.ByteBuffer;
@@ -110,6 +111,8 @@ public class ProtocolEncoder extends OutboundHandler<Void, ByteBuffer> {
             } else if (CLIENT_BINARY_NEW.equals(inboundProtocol)) {
                 // in case of a client, the member will not send the member protocol
                 initChannelForClient();
+            } else if (inboundProtocol.charAt(0) == '*') {
+                initChannelForRedis();
             } else {
                 // in case of a text-client, the member will not send the member protocol
                 initChannelForText();
@@ -154,6 +157,14 @@ public class ProtocolEncoder extends OutboundHandler<Void, ByteBuffer> {
                 .setOption(SO_SNDBUF, clientSndBuf());
 
         TextEncoder encoder = (TextEncoder) channel.attributeMap().remove(TEXT_ENCODER);
+        channel.outboundPipeline().replace(this, encoder);
+    }
+
+    private void initChannelForRedis() {
+        channel.options()
+                .setOption(SO_SNDBUF, clientSndBuf());
+
+        RedisEncoder encoder = (RedisEncoder) channel.attributeMap().remove(RedisEncoder.ENCODER);
         channel.outboundPipeline().replace(this, encoder);
     }
 
