@@ -28,7 +28,7 @@
         <!--<Logger name="com.hazelcast.instance" level="debug"/>-->
         <!--<Logger name="com.hazelcast.cluster" level="debug"/>-->
         <!--<Logger name="com.hazelcast.internal.cluster" level="debug"/>-->
-        <!--<Logger name="com.hazelcast.internal.partition" level="debug"/>-->
+        <Logger name="com.hazelcast.internal.partition" level="trace"/>
         <!--<Logger name="com.hazelcast.spi.hotrestart.cluster" level="debug"/>-->
         <!--<Logger name="com.hazelcast.test.mocknetwork" level="debug"/>-->
     </Loggers>
