@@ -490,7 +490,7 @@ public interface HazelcastInstance {
      * TODO
      * @return
      */
-    CPSubsystem getCpSubsystem();
+    CPSubsystem getCPSubsystem();
 
     /**
      * Shuts down this HazelcastInstance. For more information see {@link com.hazelcast.core.LifecycleService#shutdown()}.
