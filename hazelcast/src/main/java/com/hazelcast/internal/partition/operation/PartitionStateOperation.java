@@ -16,6 +16,7 @@
 
 package com.hazelcast.internal.partition.operation;
 
+import com.hazelcast.internal.cluster.Versions;
 import com.hazelcast.internal.cluster.impl.operations.JoinOperation;
 import com.hazelcast.internal.partition.InternalPartitionService;
 import com.hazelcast.internal.partition.MigrationCycleOperation;
@@ -44,15 +45,12 @@ public final class PartitionStateOperation extends AbstractPartitionOperation
     private boolean success;
 
     public PartitionStateOperation() {
+        sync = true;
     }
 
     public PartitionStateOperation(PartitionRuntimeState partitionState) {
-        this(partitionState, false);
-    }
-
-    public PartitionStateOperation(PartitionRuntimeState partitionState, boolean sync) {
+        this();
         this.partitionState = partitionState;
-        this.sync = sync;
     }
 
     @Override
@@ -90,14 +88,22 @@ public final class PartitionStateOperation extends AbstractPartitionOperation
         super.readInternal(in);
         partitionState = new PartitionRuntimeState();
         partitionState.readData(in);
-        sync = in.readBoolean();
+
+        // RU_COMPAT_3_11
+        if (in.getVersion().isUnknownOrLessThan(Versions.V3_12)) {
+            sync = in.readBoolean();
+        }
     }
 
     @Override
     protected void writeInternal(ObjectDataOutput out) throws IOException {
         super.writeInternal(out);
         partitionState.writeData(out);
-        out.writeBoolean(sync);
+
+        // RU_COMPAT_3_11
+        if (out.getVersion().isUnknownOrLessThan(Versions.V3_12)) {
+            out.writeBoolean(sync);
+        }
     }
 
     @Override
